@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vietnam Hanoi Trip Planner 2026</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',-apple-system,'Noto Sans KR',sans-serif;background:#f5f5f5;color:#1a1a1a;line-height:1.6}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#bbb;border-radius:3px}
+.header{background:linear-gradient(135deg,#d4380d 0%,#fa541c 100%);padding:20px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.header h1{font-size:22px;color:#fff}.header h1 .flag{font-size:26px}
+.badge{background:#fff3;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700;margin-left:8px;color:#fff;border:1px solid #fff5}
+.header-sub{color:#ffe7ba;font-size:12px}.header-right{text-align:right}.header-right .temp{font-size:11px;color:#ffe7ba}
+.sec-tabs{display:flex;background:#fff;border-bottom:2px solid #e0e0e0;overflow-x:auto}
+.sec-tab{padding:12px 20px;cursor:pointer;font-size:12px;font-weight:600;color:#999;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.sec-tab:hover{color:#555;background:#fafafa}.sec-tab.active{color:#d4380d;border-bottom-color:#d4380d;background:#fff8f0}
+.section-content{display:none}.section-content.active{display:block}
+#map{width:100%;height:45vh;min-height:300px;border-bottom:1px solid #e0e0e0}
+#dayMap{width:100%;height:380px;border:1px solid #e0e0e0;border-radius:10px;z-index:1}
+@media(min-width:769px){.itin-layout{display:flex;gap:0}.itin-map-wrap{flex:0 0 45%;position:sticky;top:0;align-self:flex-start;max-height:100vh;padding:16px}.itin-list-wrap{flex:1;min-width:0;padding:16px}}
+@media(max-width:768px){#dayMap{height:250px;margin:10px}.itin-list-wrap{padding:10px}}
+.route-section{padding:20px 24px;background:#fff;border-top:1px solid #e8e8e8}.route-section h3{font-size:15px;margin-bottom:12px}
+.route-flow{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:16px}
+.route-city{background:#fff1f0;border:1px solid #ffccc7;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;color:#cf1322}
+.route-city.overnight{background:#d4380d;color:#fff;border-color:#d4380d}.route-arrow{color:#999;font-size:14px}
+.stats-row{display:flex;gap:10px;padding:16px 24px;overflow-x:auto;background:#fff;border-top:1px solid #e8e8e8}
+.stat{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;flex:1;min-width:120px}
+.stat .label{font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.stat .value{font-size:18px;font-weight:800;color:#1a1a1a;margin-top:2px}.stat .stat-sub{font-size:10px;color:#6b7280}
+.cal-wrap{padding:20px 24px;background:#fff}.cal-wrap h3{font-size:15px;color:#333;margin-bottom:12px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:16px}
+.cal-header{background:#f0f0f0;padding:6px;text-align:center;font-size:11px;font-weight:700;color:#666}.cal-header.sun{color:#dc2626}
+.cal-cell{min-height:80px;background:#fff;border:1px solid #e8e8e8;padding:4px 6px;font-size:10px;position:relative;transition:all .2s}
+.cal-cell.empty{background:#fafafa;border-color:#f0f0f0}.cal-cell.trip{background:#fff8f0;border-color:#ffbb96}
+.cal-cell.trip:hover{background:#fff1e6;box-shadow:0 2px 8px rgba(212,56,13,.12)}
+.cal-date{font-weight:700;font-size:12px;color:#333;margin-bottom:2px}.cal-cell.sun .cal-date{color:#dc2626}
+.cal-city{font-size:10px;font-weight:700;color:#d4380d;line-height:1.3}
+.cal-detail{font-size:9px;color:#666;line-height:1.3;margin-top:1px}
+.cal-transport{font-size:8px;color:#fff;background:#d48806;padding:1px 4px;border-radius:3px;display:inline-block;margin-top:2px}
+.cal-nights{position:absolute;top:3px;right:4px;font-size:8px;background:#d4380d;color:#fff;padding:0 4px;border-radius:3px}
+.day-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.day-tab{padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid #e5e7eb;background:#fff;color:#666;transition:all .2s}
+.day-tab:hover{border-color:#ffbb96;color:#d4380d}.day-tab.active{background:#d4380d;color:#fff;border-color:#d4380d}
+.day-block{background:#fff;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:12px;overflow:hidden}
+.day-header{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .2s}
+.day-header:hover{background:#f9fafb}.day-header.open{background:#fff8f0;border-bottom:1px solid #e0e0e0}
+.day-header .left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.day-num{background:#d4380d;color:#fff;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:700}
+.day-date{font-size:12px;color:#666}.day-city{font-size:14px;font-weight:700;color:#1a1a1a}
+.day-theme{font-size:11px;color:#d48806;font-style:italic}
+.day-route-summary{font-size:10px;color:#6b7280;display:block;width:100%;margin-top:2px}
+.day-toggle{font-size:18px;color:#999;transition:transform .2s}.day-header.open .day-toggle{transform:rotate(180deg)}
+.day-body{display:none;padding:0}.day-header.open+.day-body{display:block}
+.sched-table{width:100%;border-collapse:collapse}
+.sched-table td{padding:6px 12px;border-bottom:1px solid #f3f4f6;font-size:11px;vertical-align:top}
+.sched-table td:first-child{width:50px;font-weight:700;color:#d48806;white-space:nowrap}
+.sched-table td:nth-child(2){font-weight:600;color:#1a1a1a;min-width:120px}
+.sched-table td:nth-child(3){color:#555}
+.sched-row{cursor:pointer;transition:background .15s}.sched-row:hover{background:#fff8f0}
+.sched-row.active-row td{background:#fff1e6;border-left:3px solid #d4380d}
+.tag-food{background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;margin-left:4px}
+.tag-move{background:#dbeafe;color:#1e40af;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;margin-left:4px}
+.tag-spot{background:#dcfce7;color:#166534;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;margin-left:4px}
+.tag-cruise{background:#e6f7ff;color:#0050b3;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;margin-left:4px}
+.tag-hotel{background:#ede9fe;color:#5b21b6;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;margin-left:4px}
+.tag-warn{background:#fff1f0;color:#cf1322;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;margin-left:4px}
+.highlight-row td{background:#fff7ed}
+.cost-row td{background:#f0fdf4;color:#059669!important;font-weight:600!important;font-size:10px!important}
+.tip-row{background:#fffbeb;font-size:10px!important;color:#92400e!important}.tip-row td{border-bottom:1px solid #fef3c7!important}
+.transport-section{padding:20px 24px;background:#fff;border-top:1px solid #e8e8e8}.transport-section h3{font-size:15px;margin-bottom:12px}
+.t-table{width:100%;border-collapse:collapse;font-size:11px}
+.t-table th{background:#f3f4f6;padding:8px 10px;text-align:left;font-size:10px;color:#6b7280;font-weight:700;border-bottom:2px solid #e5e7eb;position:sticky;top:0}
+.t-table td{padding:8px 10px;border-bottom:1px solid #f3f4f6;vertical-align:top}.t-table tr:hover{background:#f9fafb}
+.t-table .day-col{font-weight:700;color:#d4380d;white-space:nowrap;width:55px}
+.t-table .route-col{font-weight:600;color:#1a1a1a}.t-table .mode-col{color:#d48806;font-weight:600}
+.t-table .cost-col{color:#059669;font-weight:600;white-space:nowrap}
+.hotel-section{padding:20px 24px;background:#fff;border-top:1px solid #e8e8e8}.hotel-section h3{font-size:15px;margin-bottom:16px}
+.hotel-city{margin-bottom:24px}
+.hotel-city h4{font-size:14px;color:#d4380d;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #fff1f0;display:flex;align-items:center;gap:8px}
+.hotel-city h4 .nights-badge{background:#d4380d;color:#fff;padding:1px 8px;border-radius:4px;font-size:10px}
+.hotel-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.hotel-card{border:1px solid #e5e7eb;border-radius:10px;padding:14px;transition:all .2s}
+.hotel-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.hotel-card.confirmed{border-color:#d4380d;background:#fffbf0}
+.hotel-card .h-name{font-weight:700;font-size:13px;margin-bottom:4px}
+.hotel-card .h-stars{color:#f59e0b;font-size:11px;margin-bottom:4px}
+.hotel-card .h-desc{font-size:11px;color:#666;line-height:1.4;margin-bottom:8px}
+.hotel-card .h-price{font-size:14px;font-weight:800;color:#059669;margin-bottom:4px}.hotel-card .h-price small{font-size:10px;color:#999;font-weight:400}
+.hotel-card .h-addr{font-size:10px;color:#888;margin-bottom:6px}
+.hotel-card .h-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.hotel-card .h-tag{font-size:9px;padding:2px 6px;border-radius:3px;background:#f3f4f6;color:#555}
+.hotel-card .h-tag.confirmed-tag{background:#fff1f0;color:#cf1322;font-weight:700}
+.hotel-card .h-links{display:flex;gap:6px;flex-wrap:wrap}
+.hotel-card .h-links a{display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;text-decoration:none;color:#fff;background:#d4380d}
+.hotel-card .h-links a:hover{background:#a8071a}
+.hotel-card .h-links a.booking{background:#003580}.hotel-card .h-links a.agoda{background:#e74c3c}
+.hotel-tip{background:#fffbeb;border-left:4px solid #f59e0b;padding:10px 14px;border-radius:0 8px 8px 0;margin-top:8px;font-size:11px;color:#666}
+.budget-section{padding:20px 24px;background:#fff;border-top:1px solid #e8e8e8}.budget-section h3{font-size:15px;margin-bottom:12px}
+.b-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.b-row .lbl{width:65px;font-size:11px;color:#666;text-align:right;font-weight:600}
+.b-bar-wrap{flex:1;height:24px;background:#f3f4f6;border-radius:4px;overflow:hidden}
+.b-bar{height:100%;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:10px;font-weight:700;color:#fff}
+.b-row .amt{width:100px;font-size:11px;color:#666}
+.budget-total{margin-top:12px;padding:12px 16px;background:#fff8f0;border-radius:8px;display:flex;justify-content:space-around;text-align:center}
+.budget-total .item .val{font-size:20px;font-weight:800;color:#d4380d}.budget-total .item .lbl{font-size:10px;color:#666}
+.info-section{padding:20px 24px;background:#fff;border-top:1px solid #e8e8e8}.info-section h3{font-size:15px;margin-bottom:12px}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.info-card{border:1px solid #e5e7eb;border-radius:10px;padding:14px}
+.info-card h4{font-size:13px;margin-bottom:8px;color:#d4380d}
+.info-card ul{list-style:none;font-size:11px;color:#555}.info-card ul li{margin-bottom:4px;padding-left:16px;position:relative}
+.info-card ul li::before{content:"•";position:absolute;left:0;color:#d4380d;font-weight:700}
+.emergency-bar{background:#fff1f0;border:1px solid #ffccc7;border-radius:8px;padding:12px 16px;margin:0 0 12px;font-size:11px}
+.emergency-bar h4{color:#cf1322;font-size:12px;margin-bottom:4px}.emergency-bar span{margin-right:16px}
+.checklist{background:#f0f5ff;border:1px solid #91d5ff;border-radius:8px;padding:12px 16px;margin:16px 24px;font-size:11px}
+.checklist h4{color:#0050b3;font-size:12px;margin-bottom:6px}.checklist label{display:block;margin-bottom:3px;cursor:pointer}
+.checklist input[type=checkbox]{margin-right:6px}
+footer{text-align:center;padding:16px;color:#999;font-size:10px;border-top:1px solid #e8e8e8;background:#fff}
+@media(max-width:768px){.header{padding:14px 16px}.header h1{font-size:18px}.sec-tab{padding:8px 12px;font-size:11px}#map{height:250px;min-height:200px}.stats-row{flex-wrap:wrap;padding:12px 14px;gap:8px}.stat{min-width:calc(50% - 8px)}.stat .value{font-size:16px}.cal-wrap{padding:12px 10px}.cal-cell{min-height:55px;padding:2px 3px}.cal-date{font-size:10px}.cal-city{font-size:8px}.cal-detail{font-size:7px}.hotel-cards{grid-template-columns:1fr}.budget-total{flex-direction:column;gap:8px}.info-grid{grid-template-columns:1fr}.transport-section{overflow-x:auto}.t-table{min-width:550px}}
+@media(max-width:480px){.header h1{font-size:16px}.cal-cell{min-height:48px}.cal-detail{display:none}.sched-table td{font-size:9px;padding:4px 6px}}
+</style>
+</head>
+<body>
+<div class="header">
+<div>
+<h1><span class="flag">🇻🇳</span> Vietnam Hanoi Planner 2026 <span class="badge">5N 6D</span></h1>
+<div class="header-sub">2026.04.10(금) ~ 04.15(수) | KE441/KE442 | 3인 가족 (엄마·누나·나)</div>
+</div>
+<div class="header-right">
+<div class="temp">🌡️ 4월 하노이: 25~32°C 습도 높음</div>
+<div class="temp">💰 1 KRW ≈ 17.6 VND</div>
+</div>
+</div>
+<div class="sec-tabs" id="secTabs"></div>
+<div class="section-content" id="sec-overview"><div id="map"></div>
+<div class="route-section"><h3>이동 경로</h3><div class="route-flow" id="routeFlow"></div></div>
+<div class="stats-row" id="statsRow"></div></div>
+<div class="section-content" id="sec-calendar"><div class="cal-wrap"><h3>April 2026</h3><div class="cal-grid" id="calGrid"></div></div></div>
+<div class="section-content" id="sec-itinerary">
+<div style="padding:16px 16px 0">
+<div class="emergency-bar"><h4>⚠️ HARD DEADLINE</h4><span>📌 4/12 08:00 크루즈 픽업</span><span>📌 4/15 08:30 공항 출발</span><span>📌 4/11 밤 크루즈 차량정보 확인</span></div>
+<div class="day-tabs" id="dayTabs"></div>
+</div>
+<div class="itin-layout"><div class="itin-map-wrap"><div id="dayMap"></div></div><div class="itin-list-wrap" id="itinSection"></div></div>
+</div>
+<div class="section-content" id="sec-transport"><div class="transport-section"><h3>교통수단 상세 (3인 기준)</h3><div style="overflow-x:auto"><table class="t-table"><thead><tr><th>DAY</th><th>구간</th><th>수단</th><th>소요</th><th>비용(3인)</th><th>비고</th></tr></thead><tbody id="transportBody"></tbody></table></div></div></div>
+<div class="section-content" id="sec-hotel"><div class="hotel-section"><h3>숙소 정보 (모두 확정)</h3><div id="hotelContent"></div></div>
+<div class="checklist"><h4>📋 사전 체크리스트</h4>
+<label><input type="checkbox"> 르 샤토: 얼리체크인(12:00) WhatsApp 요청 (+84 94 320 3535)</label>
+<label><input type="checkbox"> 르 샤토: 4/12 조식 07:00 이전 가능 확인</label>
+<label><input type="checkbox"> 스테이하롱: 크루즈 픽업 시 르 샤토 주소 전달</label>
+<label><input type="checkbox"> 스테이하롱: 복귀 시 더 파이브 레지던스까지 리무진 이동 가능 여부</label>
+<label><input type="checkbox"> 더 파이브: 4/15 공항 택시 사전 예약</label>
+<label><input type="checkbox"> Grab 앱 설치 + 카드 등록</label>
+<label><input type="checkbox"> eSIM 구매 (Airalo 5GB/7일)</label>
+<label><input type="checkbox"> 수상인형극 예매</label>
+</div></div>
+<div class="section-content" id="sec-budget"><div class="budget-section"><h3>예산 (1인 기준, KRW)</h3><div id="budgetBars"></div><div class="budget-total" id="budgetTotal"></div></div></div>
+<div class="section-content" id="sec-info"><div class="info-section"><h3>실용 정보</h3><div class="info-grid" id="infoGrid"></div></div></div>
+<footer>Vietnam Hanoi Trip Planner 2026 v2 | 하노이·하롱베이·닌빈 | Day Map Tracking</footer>
+<script>
+const SECTIONS=[{id:"overview",label:"📍 지도"},{id:"calendar",label:"📅 캘린더"},{id:"itinerary",label:"📋 일정표"},{id:"transport",label:"🚗 교통"},{id:"hotel",label:"🏨 숙소"},{id:"budget",label:"💰 예산"},{id:"info",label:"ℹ️ 정보"}];
+const tabsEl=document.getElementById("secTabs");
+SECTIONS.forEach((s,i)=>{const d=document.createElement("div");d.className="sec-tab"+(i===0?" active":"");d.textContent=s.label;d.onclick=()=>{document.querySelectorAll(".sec-tab").forEach(t=>t.classList.remove("active"));document.querySelectorAll(".section-content").forEach(c=>c.classList.remove("active"));d.classList.add("active");document.getElementById("sec-"+s.id).classList.add("active");if(s.id==="overview"&&window.mainMap)mainMap.invalidateSize();if(s.id==="itinerary"&&window.dayMap)setTimeout(()=>dayMap.invalidateSize(),100);};tabsEl.appendChild(d);});
+document.getElementById("sec-overview").classList.add("active");
+
+// MAP
+const cities=[{name:"인천(ICN)",lat:37.4602,lng:126.4407,n:0,color:"#999",icon:"✈️"},{name:"하노이",lat:21.0285,lng:105.8542,n:4,color:"#d4380d",icon:"🏛️"},{name:"하롱베이",lat:20.9101,lng:107.1839,n:1,color:"#0050b3",icon:"🚢"},{name:"닌빈",lat:20.2506,lng:105.9745,n:0,color:"#389e0d",icon:"⛰️"}];
+let mainMap;
+function initMap(){mainMap=L.map("map").setView([21.0,106.0],7);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:'© OSM'}).addTo(mainMap);const bounds=[];cities.forEach(c=>{L.marker([c.lat,c.lng],{icon:L.divIcon({className:"",html:`<div style="background:${c.color};color:#fff;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)">${c.icon} ${c.name}${c.n>0?" ("+c.n+"N)":""}</div>`,iconSize:[0,0],iconAnchor:[-10,15]})}).addTo(mainMap).bindPopup(`<b>${c.name}</b>`);bounds.push([c.lat,c.lng]);});L.polyline([[21.0285,105.8542],[20.9101,107.1839]],{color:"#0050b3",weight:2,dashArray:"8,6"}).addTo(mainMap);L.polyline([[21.0285,105.8542],[20.2506,105.9745]],{color:"#389e0d",weight:2,dashArray:"8,6"}).addTo(mainMap);mainMap.fitBounds(bounds,{padding:[40,40]});}
+initMap();
+
+// ROUTE FLOW
+const routeFlow=document.getElementById("routeFlow");
+["ICN","→","하노이(2N)","→","하롱베이(1N)","→","하노이(2N)","→","닌빈(당일)","→","하노이","→","ICN"].forEach(r=>{if(r==="→"){const a=document.createElement("span");a.className="route-arrow";a.textContent="→";routeFlow.appendChild(a);}else{const d=document.createElement("span");d.className="route-city"+(["하노이(2N)","하롱베이(1N)","하노이(2N)"].includes(r)?" overnight":"");d.textContent=r;routeFlow.appendChild(d);}});
+
+// STATS
+[{l:"총 기간",v:"5N 6D",s:"4/10~4/15"},{l:"항공",v:"KE 441/442",s:"A321neo 직항"},{l:"예산(1인)",v:"~185만원",s:"항공+숙소+현지"},{l:"도시",v:"3곳",s:"하노이·하롱베이·닌빈"},{l:"이동거리",v:"~480km",s:"하노이 기점 왕복"}].forEach(s=>{const d=document.createElement("div");d.className="stat";d.innerHTML=`<div class="label">${s.l}</div><div class="value">${s.v}</div><div class="stat-sub">${s.s}</div>`;document.getElementById("statsRow").appendChild(d);});
+
+// CALENDAR
+const calGrid=document.getElementById("calGrid");
+["일","월","화","수","목","금","토"].forEach((d,i)=>{const h=document.createElement("div");h.className="cal-header"+(i===0?" sun":"");h.textContent=d;calGrid.appendChild(h);});
+const calData={10:{city:"인천→하노이",detail:"KE441 08:00→10:50\nGrab→르샤토호텔",transport:"Grab 40분",nights:"르샤토 1N"},11:{city:"하노이 종일",detail:"묘소+문묘+수상인형극\n토요 야시장",nights:"르샤토 2N"},12:{city:"→하롱베이",detail:"08:00 픽업\n그랜드 파이어니스",transport:"리무진 3h",nights:"크루즈"},13:{city:"하롱베이→하노이",detail:"11:00 하선\n서호+쩐꾸옥사원",transport:"리무진 3h",nights:"파이브 1N"},14:{city:"닌빈 당일치기",detail:"짱안 보트투어\n무아동굴 전망대",transport:"투어 2.5h",nights:"파이브 2N"},15:{city:"하노이→귀국",detail:"08:30 공항출발\nKE442 12:05",transport:"Grab 40분"}};
+for(let i=0;i<3;i++){const e=document.createElement("div");e.className="cal-cell empty";calGrid.appendChild(e);}
+for(let d=1;d<=30;d++){const cell=document.createElement("div");const isTrip=d>=10&&d<=15;const isSun=(3+d-1)%7===0;cell.className="cal-cell"+(isTrip?" trip":"")+(isSun?" sun":"");let html=`<div class="cal-date">${d}</div>`;if(calData[d]){html+=`<div class="cal-city">${calData[d].city}</div><div class="cal-detail">${calData[d].detail.replace(/\n/g,"<br>")}</div>`;if(calData[d].transport)html+=`<span class="cal-transport">${calData[d].transport}</span>`;if(calData[d].nights)html+=`<span class="cal-nights">${calData[d].nights}</span>`;}cell.innerHTML=html;calGrid.appendChild(cell);}
+
+// ITINERARY DATA
+const DAYS=[
+{day:1,date:"4/10 금",city:"인천→하노이",theme:"도착 + 구시가지 첫 인상",routeSummary:"✈️ ICN 08:00→HAN 10:50",sched:[
+{t:"08:00",name:"인천 출발",desc:"KE441 T2",type:"move",coords:[21.2212,105.8070]},
+{t:"10:50",name:"하노이 도착",desc:"노이바이 T2, 입국심사 ~40분",type:"move",coords:[21.2212,105.8070]},
+{t:"11:30",name:"공항→시내",desc:"Grab ~300,000₫/대",type:"move",coords:[21.0334,105.8479]},
+{t:"12:00",name:"르 샤토 호텔 체크인",desc:"23-25 Hang Thiec, 얼리체크인 사전요청",type:"hotel",coords:[21.0334,105.8479]},
+{t:"13:00",name:"점심: Phở Gia Truyền",desc:"49 Bát Đàn, ~40,000₫/그릇",type:"food",coords:[21.0345,105.8490]},
+{t:"14:00",name:"호안끼엠 호수",desc:"옥산사(Ngoc Son) 30,000₫",type:"spot",coords:[21.0285,105.8542]},
+{t:"15:30",name:"구시가지 36거리",desc:"도보 탐험, 기념품",type:"spot",coords:[21.0340,105.8500]},
+{t:"16:30",name:"에그커피: Giang Cafe",desc:"39 Nguyễn Hữu Huân, ~35,000₫",type:"food",coords:[21.0340,105.8520]},
+{t:"17:30",name:"호텔 휴식",desc:"비행 피로 회복",type:"",coords:[21.0334,105.8479]},
+{t:"18:30",name:"저녁: Bún Chả Hương Liên",desc:"오바마 분짜, 24 Lê Văn Hưu, ~60,000₫",type:"food",coords:[21.0132,105.8490]},
+{t:"20:00",name:"호안끼엠 야경",desc:"금요일 보행자거리!",type:"hl",coords:[21.0285,105.8542]},
+{t:"21:30",name:"호텔 복귀",desc:"",type:"",coords:[21.0334,105.8479]}
+],cost:"~500K₫/인"},
+{day:2,date:"4/11 토",city:"하노이",theme:"핵심 관광 + 토요 야시장",routeSummary:"🚶 묘소→문묘→구시가지→야시장",sched:[
+{t:"07:00",name:"아침: 호텔 조식",desc:"무료 조식 포함",type:"food",coords:[21.0334,105.8479]},
+{t:"08:00",name:"호치민 묘소",desc:"무료, 반바지/민소매 금지!",type:"spot",coords:[21.0369,105.8354],tip:"⚠️ 오전만 (08:00~11:00), 토요일 OK"},
+{t:"09:00",name:"주석궁 + 한기둥 사원",desc:"주석궁 40,000₫",type:"spot",coords:[21.0364,105.8340]},
+{t:"10:00",name:"호치민 박물관",desc:"40,000₫",type:"spot",coords:[21.0361,105.8325]},
+{t:"11:00",name:"문묘 (국자감)",desc:"30,000₫, 베트남 최초 대학",type:"spot",coords:[21.0275,105.8355]},
+{t:"12:00",name:"점심: Chả Cá Thăng Long",desc:"짜까(생선튀김), ~120,000₫",type:"food",coords:[21.0330,105.8510]},
+{t:"13:30",name:"Đinh Cafe",desc:"에그커피 루프탑뷰",type:"food",coords:[21.0290,105.8520]},
+{t:"14:30",name:"호아로 수용소",desc:"30,000₫, 하노이 힐튼",type:"spot",coords:[21.0255,105.8470]},
+{t:"15:30",name:"하노이 대성당",desc:"St. Joseph's Cathedral",type:"spot",coords:[21.0288,105.8490]},
+{t:"16:30",name:"기차거리 카페",desc:"Train Street",type:"hl",coords:[21.0240,105.8430]},
+{t:"17:30",name:"숙소 휴식",desc:"",type:"",coords:[21.0334,105.8479]},
+{t:"18:30",name:"탕롱 수상인형극",desc:"~100,000₫, 사전예매!",type:"spot",coords:[21.0310,105.8530],tip:"💡 Thang Long Theatre, 57B Dinh Tien Hoang"},
+{t:"19:30",name:"비어호이 + 야식",desc:"Tạ Hiện St, 맥주 ~10,000₫",type:"food",coords:[21.0350,105.8530]},
+{t:"20:30",name:"토요 야시장!",desc:"호안끼엠 주변",type:"hl",coords:[21.0330,105.8530]},
+{t:"21:30",name:"호텔 복귀",desc:"⚠️ 21~22시 크루즈 차량정보 확인!",type:"warn",coords:[21.0334,105.8479]}
+],cost:"~700K₫/인"},
+{day:3,date:"4/12 일",city:"하노이→하롱베이",theme:"그랜드 파이어니스 크루즈",routeSummary:"🚐 08:00 픽업→하롱베이 (3h)",sched:[
+{t:"06:30",name:"기상+짐정리",desc:"체크아웃 준비, 짐 분리",type:""},
+{t:"07:00",name:"호텔 조식",desc:"간단히",type:"food",coords:[21.0334,105.8479]},
+{t:"07:45",name:"로비 대기",desc:"⚠️ 여권 필수!",type:"warn",coords:[21.0334,105.8479]},
+{t:"08:00",name:"크루즈 리무진 픽업",desc:"르 샤토 호텔 앞",type:"move",coords:[21.0334,105.8479]},
+{t:"10:30",name:"중간 휴게소",desc:"15분 휴식",type:"",coords:[20.9600,106.6600]},
+{t:"11:30",name:"투안차우 마리나 도착",desc:"크루즈 체크인",type:"cruise",coords:[20.9401,107.0520]},
+{t:"12:30",name:"승선 + 웰컴드링크",desc:"그랜드 파이어니스",type:"cruise",coords:[20.9101,107.1839]},
+{t:"13:00",name:"선상 점심",desc:"코스요리 (포함)",type:"food",coords:[20.9101,107.1839]},
+{t:"15:30",name:"승솟 동굴 탐험",desc:"Sung Sot Cave",type:"cruise",coords:[20.9050,107.1700]},
+{t:"17:30",name:"Happy Hour",desc:"Sky Bar 일몰감상",type:"hl",coords:[20.9101,107.1839]},
+{t:"19:00",name:"선상 갈라디너",desc:"해산물 코스 (포함)",type:"food",coords:[20.9101,107.1839]},
+{t:"21:00",name:"오징어 낚시",desc:"선상 야간 활동",type:"cruise",coords:[20.9101,107.1839]}
+],cost:"크루즈포함"},
+{day:4,date:"4/13 월",city:"하롱베이→하노이",theme:"크루즈 하선 + 서호 산책",routeSummary:"🚐 11:00 하선→하노이 (~14:30)",sched:[
+{t:"05:30",name:"일출 감상",desc:"갑판에서",type:"hl",coords:[20.9101,107.1839]},
+{t:"06:00",name:"타이치/요가",desc:"선상 프로그램",type:"cruise",coords:[20.9101,107.1839]},
+{t:"07:00",name:"가벼운 조식",desc:"(포함)",type:"food",coords:[20.9101,107.1839]},
+{t:"07:30",name:"루온 동굴 보트",desc:"Luon Cave 대나무보트",type:"cruise",coords:[20.9150,107.1600]},
+{t:"09:30",name:"브런치 뷔페",desc:"(포함)",type:"food",coords:[20.9101,107.1839]},
+{t:"11:00",name:"크루즈 하선",desc:"투안차우 선착장",type:"move",coords:[20.9401,107.0520]},
+{t:"11:30",name:"리무진 탑승",desc:"하노이 복귀 (~3h)",type:"move",coords:[20.9401,107.0520]},
+{t:"14:30",name:"더 파이브 레지던스 체크인",desc:"343-345 Doi Can, Ba Dinh",type:"hotel",coords:[21.0364,105.8163]},
+{t:"15:30",name:"카페 휴식",desc:"피로 회복",type:"food",coords:[21.0364,105.8163]},
+{t:"16:30",name:"서호 (떠이호)",desc:"Grab 이동, 호수 산책",type:"spot",coords:[21.0525,105.8290]},
+{t:"17:00",name:"쩐꾸옥 사원",desc:"서호 위 불교사원, 무료",type:"spot",coords:[21.0478,105.8363]},
+{t:"18:30",name:"저녁: 반미 + 맥주",desc:"Bánh Mì 25, ~25,000₫",type:"food",coords:[21.0350,105.8510]},
+{t:"20:00",name:"마사지",desc:"~300,000₫/인 (1시간)",type:"",coords:[21.0340,105.8500]},
+{t:"21:30",name:"숙소 복귀",desc:"내일 닌빈 준비",type:"",coords:[21.0364,105.8163]}
+],cost:"~600K₫/인"},
+{day:5,date:"4/14 화",city:"닌빈 당일치기",theme:"육지의 하롱베이",routeSummary:"🚐 하노이↔닌빈 왕복 (당일)",sched:[
+{t:"06:30",name:"기상+아침",desc:"간단히",type:"food",coords:[21.0364,105.8163]},
+{t:"07:00",name:"투어버스 픽업",desc:"숙소 앞",type:"move",coords:[21.0364,105.8163]},
+{t:"09:30",name:"닌빈 도착",desc:"짱안 선착장",type:"move",coords:[20.2506,105.9745]},
+{t:"10:00",name:"짱안 보트투어",desc:"UNESCO, ~2시간, 200,000₫",type:"spot",coords:[20.2506,105.9745],tip:"💡 모자+선크림 필수. 노 젓는 보트"},
+{t:"12:00",name:"닌빈 점심",desc:"염소고기(Dê) 특산, ~150,000₫",type:"food",coords:[20.2500,105.9700]},
+{t:"13:30",name:"무아 동굴 전망대",desc:"계단 500개, 100,000₫",type:"spot",coords:[20.2370,105.9619],tip:"⚠️ 엄마 체력 고려. 아래 논 풍경도 OK"},
+{t:"15:00",name:"닌빈 출발",desc:"하노이 복귀",type:"move",coords:[20.2506,105.9745]},
+{t:"17:30",name:"하노이 도착",desc:"숙소 휴식+샤워",type:"",coords:[21.0364,105.8163]},
+{t:"19:00",name:"마지막 밤 저녁",desc:"특별한 곳에서!",type:"food",coords:[21.0340,105.8500]},
+{t:"20:30",name:"쇼핑+마사지",desc:"구시가지 기념품, 커피",type:"",coords:[21.0340,105.8500]},
+{t:"22:00",name:"숙소 복귀",desc:"⚠️ 짐 정리! 내일 08:30출발",type:"warn",coords:[21.0364,105.8163]}
+],cost:"~800K₫/인"},
+{day:6,date:"4/15 수",city:"하노이→귀국",theme:"마지막 아침 + 귀국",routeSummary:"✈️ HAN 12:05→ICN 18:35",sched:[
+{t:"07:00",name:"기상+짐 정리",desc:"전날 밤 완료",type:"",coords:[21.0364,105.8163]},
+{t:"07:30",name:"아침: 마지막 쌀국수",desc:"숙소 근처",type:"food",coords:[21.0364,105.8163]},
+{t:"08:15",name:"체크아웃",desc:"더 파이브 레지던스",type:"hotel",coords:[21.0364,105.8163]},
+{t:"08:30",name:"공항 출발",desc:"Grab ~350,000₫, 40~50분",type:"move",coords:[21.2212,105.8070]},
+{t:"09:15",name:"노이바이 공항 도착",desc:"T2 국제선",type:"move",coords:[21.2212,105.8070]},
+{t:"09:30",name:"체크인+수하물위탁",desc:"대한항공",type:""},
+{t:"10:30",name:"면세점 쇼핑",desc:"커피, 과자",type:""},
+{t:"12:05",name:"하노이 출발",desc:"KE442",type:"move",coords:[21.2212,105.8070]},
+{t:"18:35",name:"인천 도착 🎉",desc:"수고하셨습니다!",type:""}
+],cost:"~300K₫/인"}
+];
+
+// DAY MAP
+let dayMap,dayMarkers=[],dayLine,activeDay=0;
+function initDayMap(){dayMap=L.map("dayMap").setView([21.03,105.85],13);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:'© OSM'}).addTo(dayMap);}
+const markerColors={food:"#d48806",move:"#1890ff",spot:"#389e0d",hl:"#d4380d",cruise:"#0050b3",hotel:"#722ed1",warn:"#cf1322","":"#999"};
+function showDay(idx){
+activeDay=idx;
+document.querySelectorAll(".day-tab").forEach((t,i)=>{t.classList.toggle("active",i===idx);});
+document.querySelectorAll(".day-block").forEach((b,i)=>{const h=b.querySelector(".day-header");if(i===idx){h.classList.add("open");}else{h.classList.remove("open");}});
+dayMarkers.forEach(m=>dayMap.removeLayer(m));dayMarkers=[];
+if(dayLine)dayMap.removeLayer(dayLine);
+const day=DAYS[idx];const coords=[];let n=1;
+day.sched.forEach(s=>{
+if(!s.coords)return;
+coords.push(s.coords);
+const color=markerColors[s.type]||"#999";
+const m=L.circleMarker(s.coords,{radius:8,fillColor:color,color:"#fff",weight:2,fillOpacity:.9}).addTo(dayMap);
+m.bindPopup(`<b>${s.t} ${s.name}</b><br>${s.desc}`,{closeButton:false});
+const label=L.marker(s.coords,{icon:L.divIcon({className:"",html:`<div style="background:${color};color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)">${n}</div>`,iconSize:[16,16],iconAnchor:[8,8]})}).addTo(dayMap);
+dayMarkers.push(m,label);n++;
+});
+if(coords.length>1){dayLine=L.polyline(coords,{color:"#d4380d",weight:2.5,opacity:.7,dashArray:"6,4"}).addTo(dayMap);dayMarkers.push(dayLine);}
+if(coords.length>0){dayMap.fitBounds(coords.map(c=>[c[0],c[1]]),{padding:[30,30],maxZoom:15});}
+// highlight schedule rows
+document.querySelectorAll(".sched-row").forEach(r=>r.classList.remove("active-row"));
+}
+
+// BUILD ITINERARY
+const dayTabsEl=document.getElementById("dayTabs");
+const itinEl=document.getElementById("itinSection");
+const tagMap={food:"tag-food",move:"tag-move",spot:"tag-spot",hl:"tag-food",hotel:"tag-hotel",cruise:"tag-cruise",warn:"tag-warn"};
+const tagLabel={food:"맛집",move:"이동",spot:"관광",hl:"✨",hotel:"숙소",cruise:"크루즈",warn:"⚠️"};
+
+DAYS.forEach((day,di)=>{
+const tab=document.createElement("div");tab.className="day-tab"+(di===0?" active":"");
+tab.textContent=`D${day.day} ${day.date.split(" ")[1]}`;tab.onclick=()=>showDay(di);dayTabsEl.appendChild(tab);
+
+const block=document.createElement("div");block.className="day-block";block.dataset.day=di;
+let schedHtml="";let coordIdx=0;
+day.sched.forEach((s,si)=>{
+const tag=s.type&&tagMap[s.type]?`<span class="${tagMap[s.type]}">${tagLabel[s.type]}</span>`:"";
+const tipHtml=s.tip?`<tr class="tip-row"><td></td><td colspan="2">${s.tip}</td></tr>`:"";
+const cls=(s.type==="hl"?"highlight-row":"")+" sched-row";
+const cIdx=s.coords?coordIdx++:-1;
+schedHtml+=`<tr class="${cls}" data-ci="${cIdx}" onclick="highlightMarker(${di},${cIdx})"><td>${s.t}</td><td>${s.name}${tag}</td><td>${s.desc}</td></tr>${tipHtml}`;
+});
+schedHtml+=`<tr class="cost-row"><td></td><td>💰 일 예상</td><td>${day.cost}</td></tr>`;
+block.innerHTML=`<div class="day-header${di===0?" open":""}" onclick="this.classList.toggle('open')"><div class="left"><span class="day-num">D${day.day}</span><span class="day-date">${day.date}</span><span class="day-city">${day.city}</span><span class="day-theme">${day.theme}</span><span class="day-route-summary">${day.routeSummary}</span></div><span class="day-toggle">▼</span></div><div class="day-body"><table class="sched-table">${schedHtml}</table></div>`;
+itinEl.appendChild(block);
+});
+
+initDayMap();
+setTimeout(()=>showDay(0),300);
+
+function highlightMarker(dayIdx,coordIdx){
+if(dayIdx!==activeDay)showDay(dayIdx);
+if(coordIdx<0)return;
+const day=DAYS[dayIdx];let ci=0;
+for(const s of day.sched){if(s.coords){if(ci===coordIdx){dayMap.setView(s.coords,15);const markers=dayMarkers.filter(m=>m instanceof L.CircleMarker);if(markers[coordIdx])markers[coordIdx].openPopup();break;}ci++;}}
+document.querySelectorAll(".sched-row").forEach(r=>r.classList.remove("active-row"));
+document.querySelectorAll(`[data-ci="${coordIdx}"]`).forEach(r=>{if(r.closest(`[data-day="${dayIdx}"]`))r.classList.add("active-row");});
+}
+
+// TRANSPORT
+const transports=[
+{day:"D1",route:"인천→하노이",mode:"KE441 직항",time:"4h50m",cost:"429,200원/인",note:"A321neo, 수하물 1개"},
+{day:"D1",route:"공항→르 샤토 호텔",mode:"Grab",time:"40분",cost:"~300,000₫",note:"T2 Pillar 7"},
+{day:"D2",route:"시내 이동 (종일)",mode:"Grab+도보",time:"-",cost:"~200,000₫",note:"묘소 Grab, 나머지 도보"},
+{day:"D3",route:"르 샤토→하롱베이",mode:"크루즈 리무진",time:"~3h",cost:"포함",note:"08:00 픽업"},
+{day:"D3",route:"하롱베이 크루즈",mode:"그랜드 파이어니스",time:"1박",cost:"크루즈요금",note:"6성급, 올인클루시브"},
+{day:"D4",route:"하롱베이→하노이",mode:"크루즈 리무진",time:"~3h",cost:"포함",note:"11:00 하선"},
+{day:"D4",route:"시내 이동",mode:"Grab",time:"-",cost:"~150,000₫",note:"서호 등"},
+{day:"D5",route:"하노이↔닌빈",mode:"투어버스",time:"왕복5h",cost:"~1,500,000₫/인",note:"보트+입장료 포함"},
+{day:"D6",route:"더 파이브→공항",mode:"Grab",time:"40분",cost:"~350,000₫",note:"08:30 출발"},
+{day:"D6",route:"하노이→인천",mode:"KE442 직항",time:"4h30m",cost:"포함",note:"12:05→18:35"}
+];
+transports.forEach(t=>{const tr=document.createElement("tr");tr.innerHTML=`<td class="day-col">${t.day}</td><td class="route-col">${t.route}</td><td class="mode-col">${t.mode}</td><td>${t.time}</td><td class="cost-col">${t.cost}</td><td>${t.note}</td>`;document.getElementById("transportBody").appendChild(tr);});
+
+// HOTELS
+const hotelContent=document.getElementById("hotelContent");
+const hotels=[
+{city:"하노이 (4/10~4/12)",nights:"2박",items:[{
+name:"르 샤토 호텔 & 스파",stars:5,price:"~142,000~205,000원/박",
+addr:"23-25 Phố Hàng Thiếc, Hoàn Kiếm",
+desc:"올드쿼터 중심부. 호안끼엠 도보 8분. 리뷰 9.7/10 (1,085건). 무료 조식 포함. Sen Spa, Grandma Kitchen. 체크인 14:00 / 체크아웃 12:00",
+tags:["확정","5성급","올드쿼터","조식포함","9.7점"],confirmed:true,
+links:[{t:"Booking.com",u:"https://www.booking.com/hotel/vn/hanoi-le-chateau.html",c:"booking"},{t:"Agoda",u:"https://www.agoda.com/hanoi-le-chateau-hotel/hotel/hanoi-vn.html",c:"agoda"}],
+tips:"얼리체크인 WhatsApp 요청 (+84 94 320 3535). 4/12 08:00 체크아웃 전날 밤 프론트 고지."
+}]},
+{city:"하롱베이 (4/12~4/13)",nights:"1박",items:[{
+name:"그랜드 파이어니스 크루즈 (6성급)",stars:5,price:"~$240/2인 (Ocean Suite)",
+addr:"Port 1, Tuan Chau International Marina, Ha Long",
+desc:"슈퍼럭셔리 요트. 인피니티풀, Sky Bar, 스파, 3D골프. 식사 4끼(점심+저녁+조식+브런치), 승솟동굴, 루온동굴, 카약 포함. 무료 미니바 매일 리필.",
+tags:["확정","6성급","올인클루시브","스테이하롱"],confirmed:true,
+links:[{t:"공식사이트",u:"https://grandpioneers.com",c:""},{t:"Booking.com",u:"https://www.booking.com/hotel/vn/grand-pioneers-halong-bay-1.html",c:"booking"}],
+tips:"픽업 08:00 (차량정보 전날 밤). 여권 필수. 멀미약. 긴급: 070-4554-5185 / 카톡 stayhalong"
+}]},
+{city:"하노이 (4/13~4/15)",nights:"2박",items:[{
+name:"더 파이브 레지던스",stars:5,price:"~116,000~174,000원/박",
+addr:"343-345 Đội Cấn, Ba Đình",
+desc:"5성급 서비스드 아파트. 리뷰 9.2/10 (286건). 넓은 객실(60~155㎡). 키치넷 완비. 실내수영장, 루프탑테라스, 스파. 무료 조식 포함. 체크인 14:00",
+tags:["확정","5성급","수영장","스파","넓은객실"],confirmed:true,
+links:[{t:"Booking.com",u:"https://www.booking.com/hotel/vn/the-five-residences-hanoi.html",c:"booking"},{t:"Agoda",u:"https://www.agoda.com/the-five-residences-hanoi/hotel/hanoi-vn.html",c:"agoda"}],
+tips:"14:30 도착 OK (체크인 14:00). 4/15 공항 택시 전날 컨시어지 예약. 공항까지 ~26km 40분."
+}]}
+];
+hotels.forEach(h=>{
+const div=document.createElement("div");div.className="hotel-city";
+let cards=h.items.map(item=>{
+const stars="★".repeat(item.stars);
+const tags=item.tags.map(t=>`<span class="h-tag${t==='확정'?' confirmed-tag':''}">${t}</span>`).join("");
+const links=item.links.map(l=>`<a href="${l.u}" target="_blank" class="${l.c}">${l.t}</a>`).join("");
+return `<div class="hotel-card${item.confirmed?' confirmed':''}"><div class="h-name">${item.name}</div><div class="h-stars">${stars}</div><div class="h-addr">📍 ${item.addr}</div><div class="h-desc">${item.desc}</div><div class="h-price">${item.price}</div><div class="h-tags">${tags}</div><div class="h-links">${links}</div></div>${item.tips?`<div class="hotel-tip">💡 ${item.tips}</div>`:""}`}).join("");
+div.innerHTML=`<h4>${h.city} <span class="nights-badge">${h.nights}</span></h4><div class="hotel-cards">${cards}</div>`;
+hotelContent.appendChild(div);
+});
+
+// BUDGET
+const budgetData=[{l:"항공",a:43,c:"#d4380d"},{l:"숙소",a:96,c:"#722ed1"},{l:"교통",a:7,c:"#0050b3"},{l:"식비",a:13,c:"#d48806"},{l:"관광",a:2,c:"#389e0d"},{l:"기타",a:7,c:"#9ca3af"}];
+const bMax=Math.max(...budgetData.map(b=>b.a));
+budgetData.forEach(b=>{const r=document.createElement("div");r.className="b-row";r.innerHTML=`<div class="lbl">${b.l}</div><div class="b-bar-wrap"><div class="b-bar" style="width:${Math.round(b.a/bMax*100)}%;background:${b.c}">${b.a}만</div></div><div class="amt">~${b.a}만원</div>`;document.getElementById("budgetBars").appendChild(r);});
+document.getElementById("budgetTotal").innerHTML=`<div class="item"><div class="val">~168만</div><div class="lbl">1인 최소</div></div><div class="item"><div class="val">~208만</div><div class="lbl">1인 최대</div></div><div class="item"><div class="val">~555만</div><div class="lbl">3인 합계(평균)</div></div>`;
+
+// INFO
+[{title:"✈️ 항공편",items:["가는편: KE441 ICN 08:00→HAN 10:50 (4/10)","오는편: KE442 HAN 12:05→ICN 18:35 (4/15)","예약번호: E2Z37P | 좌석: 42D/41D","기종: A321neo | 수하물: 1개/인"]},
+{title:"📱 통신 & 앱",items:["eSIM: Airalo 5GB/7일 ~14,000원","한국서 설치: Grab, Google Maps, Be","Grab: T2 Pillar 7 픽업존","카톡 stayhalong 채널 추가"]},
+{title:"💱 환전",items:["1 KRW ≈ 17.6 VND","공항: 소액만 (50만VND ~26,000원)","본격환전: 구시가지 Hàng Bạc 금은방","ATM: VPBank/ACB 수수료 무료","500,000동(파란)≠20,000동(파란) 주의"]},
+{title:"🚕 교통",items:["Grab 필수 (요금확정, 바가지없음)","구시가지: 도보 OK (10~15분 이내)","러시아워: 07:30~09:00, 17:00~19:00","횡단: 일정 속도로 걷기 (멈추지말것!)","공항버스 86번: 45,000₫ (가성비)"]},
+{title:"🌦️ 날씨",items:["4월: 25~32°C, 습도 80%+","간헐적 소나기 → 우산 필수","통기성 좋은 옷 + 얇은 겉옷","호치민 묘소: 반바지/민소매 금지","편한 운동화 (도보 많음)"]},
+{title:"📞 긴급연락",items:["크루즈: 070-4554-5185","카톡: stayhalong (09~23시)","르 샤토: +84 94 320 3535","더 파이브: +84 24 3311 7555","대한항공 하노이: +84-24-3934-5353","대사관: +84-24-3831-5110","경찰 113 / 소방 114 / 구급 115"]}
+].forEach(info=>{const c=document.createElement("div");c.className="info-card";c.innerHTML=`<h4>${info.title}</h4><ul>${info.items.map(i=>`<li>${i}</li>`).join("")}</ul>`;document.getElementById("infoGrid").appendChild(c);});
+</script>
+</body>
+</html>
