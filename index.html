@@ -159,7 +159,7 @@ footer{text-align:center;padding:16px;color:#999;font-size:10px;border-top:1px s
 </div></div>
 <div class="section-content" id="sec-budget"><div class="budget-section"><h3>예산 (1인 기준, KRW)</h3><div id="budgetBars"></div><div class="budget-total" id="budgetTotal"></div></div></div>
 <div class="section-content" id="sec-info"><div class="info-section"><h3>실용 정보</h3><div class="info-grid" id="infoGrid"></div></div></div>
-<footer>Vietnam Hanoi Trip Planner 2026 v2 | 하노이·하롱베이·닌빈 | Day Map Tracking</footer>
+<footer>Vietnam Hanoi Trip Planner 2026 v3 | 하노이·하롱베이·닌빈 | 미슐랭 맛집 + Day Map</footer>
 <script>
 const SECTIONS=[{id:"overview",label:"📍 지도"},{id:"calendar",label:"📅 캘린더"},{id:"itinerary",label:"📋 일정표"},{id:"transport",label:"🚗 교통"},{id:"hotel",label:"🏨 숙소"},{id:"budget",label:"💰 예산"},{id:"info",label:"ℹ️ 정보"}];
 const tabsEl=document.getElementById("secTabs");
@@ -193,32 +193,38 @@ const DAYS=[
 {t:"10:50",name:"하노이 도착",desc:"노이바이 T2, 입국심사 ~40분",type:"move",coords:[21.2212,105.8070]},
 {t:"11:30",name:"공항→시내",desc:"Grab ~300,000₫/대",type:"move",coords:[21.0334,105.8479]},
 {t:"12:00",name:"르 샤토 호텔 체크인",desc:"23-25 Hang Thiec, 얼리체크인 사전요청",type:"hotel",coords:[21.0334,105.8479]},
-{t:"13:00",name:"점심: Phở Gia Truyền",desc:"49 Bát Đàn, ~40,000₫/그릇",type:"food",coords:[21.0345,105.8490]},
-{t:"14:00",name:"호안끼엠 호수",desc:"옥산사(Ngoc Son) 30,000₫",type:"spot",coords:[21.0285,105.8542]},
-{t:"15:30",name:"구시가지 36거리",desc:"도보 탐험, 기념품",type:"spot",coords:[21.0340,105.8500]},
-{t:"16:30",name:"에그커피: Giang Cafe",desc:"39 Nguyễn Hữu Huân, ~35,000₫",type:"food",coords:[21.0340,105.8520]},
-{t:"17:30",name:"호텔 휴식",desc:"비행 피로 회복",type:"",coords:[21.0334,105.8479]},
-{t:"18:30",name:"저녁: Bún Chả Hương Liên",desc:"오바마 분짜, 24 Lê Văn Hưu, ~60,000₫",type:"food",coords:[21.0132,105.8490]},
-{t:"20:00",name:"호안끼엠 야경",desc:"금요일 보행자거리!",type:"hl",coords:[21.0285,105.8542]},
+{t:"12:30",name:"점심: Phở 10 Lý Quốc Sư",desc:"10 Lý Quốc Sư, 미슐랭 빕 구르망, ~65,000₫",type:"food",coords:[21.0288,105.8490]},
+{t:"13:30",name:"호안끼엠 호수 산책",desc:"둘레 1.8km, 거북탑 감상",type:"spot",coords:[21.0285,105.8522]},
+{t:"14:15",name:"옥선사 (Ngọc Sơn)",desc:"호수 섬 사원, 30,000₫, 태양다리",type:"spot",coords:[21.0301,105.8525]},
+{t:"15:00",name:"에그커피: Café Giảng",desc:"39 Nguyễn Hữu Huân, 1946원조, ~35,000₫",type:"food",coords:[21.0340,105.8530],tip:"💡 골목 안 2층 좌석이 분위기 좋음. 에그코코아도 추천"},
+{t:"15:45",name:"하노이 대성당",desc:"St. Joseph's, 40 Nhà Chung, 네오고딕",type:"spot",coords:[21.0288,105.8490]},
+{t:"16:30",name:"구시가지 36거리",desc:"Hàng Gai(실크), Hàng Bạc(은) 도보 탐험",type:"spot",coords:[21.0340,105.8500]},
+{t:"17:30",name:"탕롱 수상인형극",desc:"57B Đinh Tiên Hoàng, ~100,000₫, 사전예매!",type:"spot",coords:[21.0290,105.8527],tip:"💡 50분 공연. 17:20 회차 추천"},
+{t:"18:30",name:"저녁: Bún Chả Đắc Kim",desc:"1 Hàng Mành, 미슐랭 선정, ~70,000₫",type:"food",coords:[21.0325,105.8485],tip:"💡 게살 스프링롤(Nem cua bể) 꼭 추가!"},
+{t:"19:30",name:"금요일 야시장!",desc:"Hàng Đào~Đồng Xuân, 18:00~23:00",type:"hl",coords:[21.0365,105.8505]},
+{t:"21:00",name:"비어호이 마무리",desc:"Tạ Hiện St, 생맥주 ~10,000₫",type:"food",coords:[21.0345,105.8520]},
 {t:"21:30",name:"호텔 복귀",desc:"",type:"",coords:[21.0334,105.8479]}
-],cost:"~500K₫/인"},
-{day:2,date:"4/11 토",city:"하노이",theme:"핵심 관광 + 토요 야시장",routeSummary:"🚶 묘소→문묘→구시가지→야시장",sched:[
-{t:"07:00",name:"아침: 호텔 조식",desc:"무료 조식 포함",type:"food",coords:[21.0334,105.8479]},
-{t:"08:00",name:"호치민 묘소",desc:"무료, 반바지/민소매 금지!",type:"spot",coords:[21.0369,105.8354],tip:"⚠️ 오전만 (08:00~11:00), 토요일 OK"},
-{t:"09:00",name:"주석궁 + 한기둥 사원",desc:"주석궁 40,000₫",type:"spot",coords:[21.0364,105.8340]},
-{t:"10:00",name:"호치민 박물관",desc:"40,000₫",type:"spot",coords:[21.0361,105.8325]},
-{t:"11:00",name:"문묘 (국자감)",desc:"30,000₫, 베트남 최초 대학",type:"spot",coords:[21.0275,105.8355]},
-{t:"12:00",name:"점심: Chả Cá Thăng Long",desc:"짜까(생선튀김), ~120,000₫",type:"food",coords:[21.0330,105.8510]},
-{t:"13:30",name:"Đinh Cafe",desc:"에그커피 루프탑뷰",type:"food",coords:[21.0290,105.8520]},
-{t:"14:30",name:"호아로 수용소",desc:"30,000₫, 하노이 힐튼",type:"spot",coords:[21.0255,105.8470]},
-{t:"15:30",name:"하노이 대성당",desc:"St. Joseph's Cathedral",type:"spot",coords:[21.0288,105.8490]},
-{t:"16:30",name:"기차거리 카페",desc:"Train Street",type:"hl",coords:[21.0240,105.8430]},
-{t:"17:30",name:"숙소 휴식",desc:"",type:"",coords:[21.0334,105.8479]},
-{t:"18:30",name:"탕롱 수상인형극",desc:"~100,000₫, 사전예매!",type:"spot",coords:[21.0310,105.8530],tip:"💡 Thang Long Theatre, 57B Dinh Tien Hoang"},
-{t:"19:30",name:"비어호이 + 야식",desc:"Tạ Hiện St, 맥주 ~10,000₫",type:"food",coords:[21.0350,105.8530]},
-{t:"20:30",name:"토요 야시장!",desc:"호안끼엠 주변",type:"hl",coords:[21.0330,105.8530]},
-{t:"21:30",name:"호텔 복귀",desc:"⚠️ 21~22시 크루즈 차량정보 확인!",type:"warn",coords:[21.0334,105.8479]}
 ],cost:"~700K₫/인"},
+{day:2,date:"4/11 토",city:"하노이",theme:"핵심 관광 + 토요 야시장",routeSummary:"🚶 묘소→문묘→구시가지→야시장",sched:[
+{t:"07:00",name:"아침: Bánh Mì 25",desc:"25 Hàng Cá, 하노이 최고 반미, ~30,000₫",type:"food",coords:[21.0352,105.8488]},
+{t:"07:30",name:"Grab→호치민 묘소",desc:"~15분, 30,000₫",type:"move",coords:[21.0369,105.8345]},
+{t:"08:00",name:"호치민 묘소",desc:"무료, 반바지/민소매 금지!",type:"spot",coords:[21.0369,105.8345],tip:"⚠️ 07:30~10:30 하절기. 토요일 OK, 월/금 휴무. 줄 30~60분"},
+{t:"09:00",name:"주석궁 + 한기둥 사원",desc:"주석궁 40,000₫, 고상가옥",type:"spot",coords:[21.0380,105.8345]},
+{t:"10:00",name:"호치민 박물관 (선택)",desc:"40,000₫",type:"spot",coords:[21.0355,105.8330]},
+{t:"10:30",name:"쩐꾸옥 사원 + 서호",desc:"도보 25분, 1500년 최고 사원",type:"spot",coords:[21.0478,105.8367],tip:"⚠️ 08:00~11:30, 13:30~18:30. 점심시간 휴무!"},
+{t:"11:30",name:"서호 산책",desc:"Thanh Niên 도로, 좌:쭉바익호 우:서호",type:"spot",coords:[21.0500,105.8350]},
+{t:"12:00",name:"점심: Bún Bò Nam Bộ",desc:"67 Hàng Điếu, 국물없는 소고기쌀국수, ~55,000₫",type:"food",coords:[21.0365,105.8493],tip:"💡 하노이 3대 국수. 땅콩+허브+느억맘"},
+{t:"13:00",name:"Cộng Cà Phê",desc:"군대테마 카페, 코코넛커피 추천",type:"food",coords:[21.0330,105.8500]},
+{t:"13:45",name:"Grab→문묘",desc:"~10분",type:"move",coords:[21.0275,105.8355]},
+{t:"14:00",name:"문묘 (국자감)",desc:"70,000₫, 베트남 최초 대학, 82개 석비",type:"spot",coords:[21.0275,105.8355],tip:"💡 5개 정원 순서대로 관람. ~1.5시간"},
+{t:"15:30",name:"호아로 수용소",desc:"1 Hòa Lò, 30,000₫+오디오 50,000₫",type:"spot",coords:[21.0255,105.8465],tip:"💡 오디오가이드 강력 추천. ~1시간"},
+{t:"17:00",name:"숙소 휴식",desc:"샤워+저녁 준비",type:"",coords:[21.0334,105.8479]},
+{t:"18:00",name:"기차거리 카페",desc:"3 Trần Phú, 토 19:30 기차 대기",type:"hl",coords:[21.0240,105.8420],tip:"💡 카페 통해 입장. 기차 ±15분 오차"},
+{t:"19:00",name:"저녁: Bánh Cuốn + Nem",desc:"Thanh Vân, 12-14 Hàng Gà, ~50,000₫",type:"food",coords:[21.0348,105.8488]},
+{t:"20:00",name:"토요 야시장!",desc:"Hàng Đào, 자정까지 가장 활기찬 날",type:"hl",coords:[21.0365,105.8505]},
+{t:"21:30",name:"호안끼엠 야경",desc:"거리공연, 보행자거리",type:"hl",coords:[21.0285,105.8522]},
+{t:"22:00",name:"호텔 복귀",desc:"⚠️ 크루즈 차량정보 카톡 확인! 짐 준비",type:"warn",coords:[21.0334,105.8479]}
+],cost:"~850K₫/인"},
 {day:3,date:"4/12 일",city:"하노이→하롱베이",theme:"그랜드 파이어니스 크루즈",routeSummary:"🚐 08:00 픽업→하롱베이 (3h)",sched:[
 {t:"06:30",name:"기상+짐정리",desc:"체크아웃 준비, 짐 분리",type:""},
 {t:"07:00",name:"호텔 조식",desc:"간단히",type:"food",coords:[21.0334,105.8479]},
@@ -241,14 +247,15 @@ const DAYS=[
 {t:"09:30",name:"브런치 뷔페",desc:"(포함)",type:"food",coords:[20.9101,107.1839]},
 {t:"11:00",name:"크루즈 하선",desc:"투안차우 선착장",type:"move",coords:[20.9401,107.0520]},
 {t:"11:30",name:"리무진 탑승",desc:"하노이 복귀 (~3h)",type:"move",coords:[20.9401,107.0520]},
-{t:"14:30",name:"더 파이브 레지던스 체크인",desc:"343-345 Doi Can, Ba Dinh",type:"hotel",coords:[21.0364,105.8163]},
-{t:"15:30",name:"카페 휴식",desc:"피로 회복",type:"food",coords:[21.0364,105.8163]},
-{t:"16:30",name:"서호 (떠이호)",desc:"Grab 이동, 호수 산책",type:"spot",coords:[21.0525,105.8290]},
-{t:"17:00",name:"쩐꾸옥 사원",desc:"서호 위 불교사원, 무료",type:"spot",coords:[21.0478,105.8363]},
-{t:"18:30",name:"저녁: 반미 + 맥주",desc:"Bánh Mì 25, ~25,000₫",type:"food",coords:[21.0350,105.8510]},
-{t:"20:00",name:"마사지",desc:"~300,000₫/인 (1시간)",type:"",coords:[21.0340,105.8500]},
-{t:"21:30",name:"숙소 복귀",desc:"내일 닌빈 준비",type:"",coords:[21.0364,105.8163]}
-],cost:"~600K₫/인"},
+{t:"14:30",name:"더 파이브 레지던스 체크인",desc:"343-345 Đội Cấn, Ba Đình, 휴식+샤워",type:"hotel",coords:[21.0370,105.8195]},
+{t:"15:45",name:"카페 휴식",desc:"연유커피(Cà Phê Sữa Đá) 재충전",type:"food",coords:[21.0370,105.8200]},
+{t:"16:30",name:"Grab→롱비엔 다리",desc:"~20분, 40,000₫",type:"move",coords:[21.0425,105.8565]},
+{t:"17:00",name:"롱비엔 다리 석양",desc:"1903년 프랑스 건설, 홍강 일몰 ~18:15",type:"hl",coords:[21.0425,105.8565],tip:"💡 보행자 통로로 걷기. 오토바이 조심"},
+{t:"18:00",name:"Grab→분짜 오바마",desc:"~15분",type:"move",coords:[21.0170,105.8530]},
+{t:"18:30",name:"저녁: Bún Chả Hương Liên",desc:"24 Lê Văn Hưu, 오바마세트 130,000₫",type:"food",coords:[21.0170,105.8530],tip:"💡 미슐랭 선정. 오바마 테이블 유리케이스 보존 중"},
+{t:"20:00",name:"호안끼엠 호수 산책",desc:"저녁 소화 산책",type:"spot",coords:[21.0285,105.8522]},
+{t:"21:00",name:"숙소 복귀",desc:"내일 닌빈 준비",type:"",coords:[21.0370,105.8195]}
+],cost:"~500K₫/인"},
 {day:5,date:"4/14 화",city:"닌빈 당일치기",theme:"육지의 하롱베이",routeSummary:"🚐 하노이↔닌빈 왕복 (당일)",sched:[
 {t:"06:30",name:"기상+아침",desc:"간단히",type:"food",coords:[21.0364,105.8163]},
 {t:"07:00",name:"투어버스 픽업",desc:"숙소 앞",type:"move",coords:[21.0364,105.8163]},
@@ -258,8 +265,8 @@ const DAYS=[
 {t:"13:30",name:"무아 동굴 전망대",desc:"계단 500개, 100,000₫",type:"spot",coords:[20.2370,105.9619],tip:"⚠️ 엄마 체력 고려. 아래 논 풍경도 OK"},
 {t:"15:00",name:"닌빈 출발",desc:"하노이 복귀",type:"move",coords:[20.2506,105.9745]},
 {t:"17:30",name:"하노이 도착",desc:"숙소 휴식+샤워",type:"",coords:[21.0364,105.8163]},
-{t:"19:00",name:"마지막 밤 저녁",desc:"특별한 곳에서!",type:"food",coords:[21.0340,105.8500]},
-{t:"20:30",name:"쇼핑+마사지",desc:"구시가지 기념품, 커피",type:"",coords:[21.0340,105.8500]},
+{t:"19:00",name:"저녁: Chả Cá Thăng Long",desc:"6B Đường Thành, 미슐랭 짜까, ~176,000₫",type:"food",coords:[21.0340,105.8460],tip:"💡 미슐랭 빕 구르망. 강황 메기+딜 테이블 조리"},
+{t:"20:30",name:"쇼핑+마사지",desc:"Hàng Gai 실크거리 + 마사지 ~300,000₫",type:"",coords:[21.0318,105.8498]},
 {t:"22:00",name:"숙소 복귀",desc:"⚠️ 짐 정리! 내일 08:30출발",type:"warn",coords:[21.0364,105.8163]}
 ],cost:"~800K₫/인"},
 {day:6,date:"4/15 수",city:"하노이→귀국",theme:"마지막 아침 + 귀국",routeSummary:"✈️ HAN 12:05→ICN 18:35",sched:[
